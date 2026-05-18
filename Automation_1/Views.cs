@@ -4,6 +4,15 @@
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
+    public static class UIConstants
+    {
+        public const int ButtonWidth = 120;
+        public const int ViewWidth = 550;
+        public const int ViewHeight = 200;
+        public const int TextBoxWidth = 273;
+        public const int TextBoxResultHeight = 80;
+    }
+
     public class SelectElementView : Dialog
     {
         public SelectElementView(Engine engine) : base(engine)
@@ -12,11 +21,13 @@
 
             LabelSelect = new Label("Please select an element on which you would like to set a parameter:");
             DropdownElements = new DropDown();
-            ButtonContinue = new Button("Continue");
+            ButtonContinue = new Button("Continue") { Width = UIConstants.ButtonWidth };
 
             AddWidget(LabelSelect, 0, 0);
             AddWidget(DropdownElements, 1, 0);
             AddWidget(ButtonContinue, 2, 0);
+            Width = UIConstants.ViewWidth;
+            Height = UIConstants.ViewHeight;
         }
 
         public Label LabelSelect { get; }
@@ -47,8 +58,8 @@
                 Value = 0,
             };
 
-            ButtonBack = new Button("Back");
-            ButtonContinue = new Button("Continue");
+            ButtonBack = new Button("Back") { Width = UIConstants.ButtonWidth };
+            ButtonContinue = new Button("Continue") { Width = UIConstants.ButtonWidth };
 
             AddWidget(LabelInstruction, 0, 0, 1, 2);
             AddWidget(NumericParameterId, 1, 0, 1, 2);
@@ -72,22 +83,26 @@
             Title = "Select Parameter Value";
 
             LabelString = new Label("String Value");
-            TextBoxString = new TextBox { PlaceHolder = "Enter string value"};
-            ButtonSetString = new Button("Set String Value");
+            TextBoxString = new TextBox
+            {
+                PlaceHolder = "Enter string value",
+                Width = UIConstants.TextBoxWidth,
+            };
+            ButtonSetString = new Button("Set String Value") { Width = UIConstants.ButtonWidth };
 
             LabelDouble = new Label("Double Value");
             NumericDouble = new Numeric { Decimals = 2, StepSize = 0.01 };
-            ButtonSetDouble = new Button("Set Double Value");
+            ButtonSetDouble = new Button("Set Double Value") { Width = UIConstants.ButtonWidth };
 
             TextBoxResult = new TextBox
             {
                 IsMultiline = true,
                 IsEnabled = false,
-                Height = 80,
+                Height = UIConstants.TextBoxResultHeight,
             };
 
-            ButtonBack = new Button("Back");
-            ButtonExit = new Button("Exit");
+            ButtonBack = new Button("Back") { Width = UIConstants.ButtonWidth };
+            ButtonExit = new Button("Exit") { Width = UIConstants.ButtonWidth };
 
             AddWidget(LabelString, 0, 0);
             AddWidget(TextBoxString, 0, 1);
@@ -97,7 +112,7 @@
             AddWidget(NumericDouble, 1, 1);
             AddWidget(ButtonSetDouble, 1, 2);
 
-            AddWidget(TextBoxResult, 2, 0, 1, 3);
+            AddWidget(TextBoxResult, 2, 0, 1, 2);
 
             AddWidget(ButtonBack, 3, 0);
             AddWidget(ButtonExit, 3, 2);
