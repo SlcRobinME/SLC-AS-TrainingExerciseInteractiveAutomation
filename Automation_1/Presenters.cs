@@ -1,7 +1,4 @@
-﻿//---------------------------------
-// Presenters.cs  (izmijenjeno)
-//---------------------------------
-namespace Automation_1
+﻿namespace Automation_1
 {
     using System;
     using System.Linq;
