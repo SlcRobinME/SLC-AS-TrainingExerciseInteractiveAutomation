@@ -35,7 +35,6 @@
         public DropDown<Element> DropdownElements { get; }
 
         public Button ButtonContinue { get; }
-
     }
 
     public class SelectParameterView : Dialog
