@@ -25,5 +25,7 @@
   <Folder Name="/Scripts/Automation/Actions/">
     <Project Path="Automation_1/Automation_1.csproj" />
   </Folder>
-  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/">
+    <Project Path="ModelViewPresenter_Tests/ModelViewPresenter_Tests.csproj" Id="e31aa97b-4a1e-4846-a341-b2a86ace49cf" />
+  </Folder>
 </Solution>

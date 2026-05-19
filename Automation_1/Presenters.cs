@@ -1,4 +1,9 @@
-﻿namespace Automation_1
+﻿//---------------------------------
+// Presenters.cs
+//---------------------------------
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ModelViewPresenter_Tests")]
+
+namespace Automation_1
 {
     using System;
     using System.Linq;
@@ -37,6 +42,10 @@
             model.SelectedElement = view.ElementDropDown.Selected;
             ContinueRequested?.Invoke(this, EventArgs.Empty);
         }
+
+        /// <summary>Test helper – directly invokes the Continue handler.</summary>
+        internal void SimulateContinuePressed() =>
+            OnContinuePressed(view.ContinueButton, EventArgs.Empty);
     }
 
     /// <summary>Presenter for the "Select Parameter" dialog.</summary>
@@ -76,6 +85,14 @@
             model.ParameterId = (int)view.ParameterIdNumeric.Value;
             ContinueRequested?.Invoke(this, EventArgs.Empty);
         }
+
+        /// <summary>Test helper – directly invokes the Back handler.</summary>
+        internal void SimulateBackPressed() =>
+            OnBackPressed(view.BackButton, EventArgs.Empty);
+
+        /// <summary>Test helper – directly invokes the Continue handler.</summary>
+        internal void SimulateContinuePressed() =>
+            OnContinuePressed(view.ContinueButton, EventArgs.Empty);
     }
 
     /// <summary>Presenter for the "Set Value" dialog.</summary>
@@ -83,11 +100,13 @@
     {
         private readonly SetValueView view;
         private readonly SetValueModel model;
+        private readonly IEngine engine;
 
-        public SetValuePresenter(SetValueView view, SetValueModel model)
+        public SetValuePresenter(SetValueView view, SetValueModel model, IEngine engine)
         {
             this.view = view;
             this.model = model;
+            this.engine = engine;
 
             view.SetStringButton.Pressed += OnSetStringPressed;
             view.SetDoubleButton.Pressed += OnSetDoublePressed;
@@ -113,8 +132,8 @@
         {
             try
             {
-                EnsureElement();
-                model.SelectedElement.SetParameter(model.ParameterId, view.StringTextBox.Text);
+                var element = FindElement();
+                element.SetParameter(model.ParameterId, view.StringTextBox.Text);
                 view.ShowResult("Success");
             }
             catch (Exception ex)
@@ -127,8 +146,8 @@
         {
             try
             {
-                EnsureElement();
-                model.SelectedElement.SetParameter(model.ParameterId, view.DoubleNumeric.Value);
+                var element = FindElement();
+                element.SetParameter(model.ParameterId, view.DoubleNumeric.Value);
                 view.ShowResult("Success");
             }
             catch (Exception ex)
@@ -147,14 +166,44 @@
             ExitRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>Throws a descriptive exception when the element reference is missing.</summary>
-        private void EnsureElement()
+        /// <summary>Test helper – directly invokes the SetString handler.</summary>
+        internal void SimulateSetStringPressed() =>
+            OnSetStringPressed(view.SetStringButton, EventArgs.Empty);
+
+        /// <summary>Test helper – directly invokes the SetDouble handler.</summary>
+        internal void SimulateSetDoublePressed() =>
+            OnSetDoublePressed(view.SetDoubleButton, EventArgs.Empty);
+
+        /// <summary>Test helper – directly invokes the Back handler.</summary>
+        internal void SimulateBackPressed() =>
+            OnBackPressed(view.BackButton, EventArgs.Empty);
+
+        /// <summary>Test helper – directly invokes the Exit handler.</summary>
+        internal void SimulateExitPressed() =>
+            OnExitPressed(view.ExitButton, EventArgs.Empty);
+
+        /// <summary>
+        /// Resolves the element fresh via engine.FindElement() — same approach as the
+        /// working original. Using the cached model reference can yield a stale object
+        /// that silently fails on SetParameter.
+        /// </summary>
+        private Element FindElement()
         {
             if (model.SelectedElement == null)
             {
                 throw new InvalidOperationException(
                     "No element is selected. Please go back and choose an element.");
             }
+
+            var element = engine.FindElement(model.SelectedElement.ElementName);
+
+            if (element == null)
+            {
+                throw new InvalidOperationException(
+                    $"Element '{model.SelectedElement.ElementName}' could not be found.");
+            }
+
+            return element;
         }
     }
 }

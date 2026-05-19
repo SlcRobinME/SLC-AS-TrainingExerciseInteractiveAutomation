@@ -6,11 +6,13 @@
     /// <summary>Shared UI dimension constants.</summary>
     public static class UIConstants
     {
+
         public const int ButtonWidth = 120;
-        public const int ViewWidth = 550;
-        public const int ViewHeight = 200;
-        public const int TextBoxWidth = 273;
-        public const int ResultBoxHeight = 80;
+        public const int ViewWidth = 560;
+        public const int ViewHeight = 220;
+        public const int TextBoxWidth = 280;
+        public const int ResultBoxHeight = 90;
+
     }
 
     /// <summary>View for the "Select Element" dialog.</summary>

@@ -7,7 +7,15 @@ Revision History:
 
 DATE		VERSION		AUTHOR			COMMENTS
 
-15/05/2024	1.0.0.1		AMO, Skyline	Initial version
+15/05/2026	1.0.0.1		AMO, Skyline	Initial version
+18/05/2026	1.0.0.2		AMO, Skyline	Pretier formatting
+****************************************************************************
+*/
+
+/*
+****************************************************************************
+*  SetParameter – Interactive Automation Script
+*  MVP pattern: Model / View / Presenter
 ****************************************************************************
 */
 
@@ -32,22 +40,10 @@ namespace Automation_1
 
                 RunSafe(engine);
             }
-            catch (ScriptAbortException)
-			{
-				throw;
-			}
-            catch (ScriptForceAbortException)
-			{
-				throw;
-			}
-            catch (ScriptTimeoutException)
-			{
-				throw;
-			}
-            catch (InteractiveUserDetachedException)
-			{
-				throw;
-			}
+            catch (ScriptAbortException) { throw; }
+            catch (ScriptForceAbortException) { throw; }
+            catch (ScriptTimeoutException) { throw; }
+            catch (InteractiveUserDetachedException) { throw; }
             catch (Exception ex)
             {
                 engine.ExitFail($"Run|Something went wrong: {ex}");
@@ -71,9 +67,7 @@ namespace Automation_1
             // --- Presenters ---
             var elementPresenter = new SelectElementPresenter(elementView, elementModel);
             var parameterPresenter = new SelectParameterPresenter(parameterView, parameterModel);
-            var valuePresenter = new SetValuePresenter(valueView, valueModel);
-
-            // --- Navigation wiring ---
+            var valuePresenter = new SetValuePresenter(valueView, valueModel, engine);
 
             // Step 1 → Step 2
             elementPresenter.ContinueRequested += (s, e) =>
