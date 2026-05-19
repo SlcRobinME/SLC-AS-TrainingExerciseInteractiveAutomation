@@ -65,9 +65,9 @@ namespace Automation_1
             var valueView = new SetValueView(engine);
 
             // --- Presenters ---
-            var elementPresenter = new SelectElementPresenter(elementView, elementModel);
-            var parameterPresenter = new SelectParameterPresenter(parameterView, parameterModel);
-            var valuePresenter = new SetValuePresenter(valueView, valueModel, engine);
+            var elementPresenter = new SelectElementPresenter((ISelectElementView)elementView, elementModel);
+            var parameterPresenter = new SelectParameterPresenter((ISelectParameterView)parameterView, parameterModel);
+            var valuePresenter = new SetValuePresenter((ISetValueView)valueView, valueModel, engine);
 
             // Step 1 → Step 2
             elementPresenter.ContinueRequested += (s, e) =>

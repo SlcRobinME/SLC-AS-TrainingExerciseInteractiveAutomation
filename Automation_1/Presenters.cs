@@ -1,8 +1,6 @@
 ﻿//---------------------------------
-// Presenters.cs
+// Presenters.cs  (izmijenjeno)
 //---------------------------------
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ModelViewPresenter_Tests")]
-
 namespace Automation_1
 {
     using System;
@@ -10,13 +8,12 @@ namespace Automation_1
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
-    /// <summary>Presenter for the "Select Element" dialog.</summary>
     public class SelectElementPresenter
     {
-        private readonly SelectElementView view;
+        private readonly ISelectElementView view;
         private readonly SelectElementModel model;
 
-        public SelectElementPresenter(SelectElementView view, SelectElementModel model)
+        public SelectElementPresenter(ISelectElementView view, SelectElementModel model)
         {
             this.view = view;
             this.model = model;
@@ -24,10 +21,8 @@ namespace Automation_1
             view.ContinueButton.Pressed += OnContinuePressed;
         }
 
-        /// <summary>Raised when the user clicks Continue.</summary>
         public event EventHandler ContinueRequested;
 
-        /// <summary>Populates the element dropdown from the model.</summary>
         public void LoadView()
         {
             var options = model.GetAllElements()
@@ -42,19 +37,14 @@ namespace Automation_1
             model.SelectedElement = view.ElementDropDown.Selected;
             ContinueRequested?.Invoke(this, EventArgs.Empty);
         }
-
-        /// <summary>Test helper – directly invokes the Continue handler.</summary>
-        internal void SimulateContinuePressed() =>
-            OnContinuePressed(view.ContinueButton, EventArgs.Empty);
     }
 
-    /// <summary>Presenter for the "Select Parameter" dialog.</summary>
     public class SelectParameterPresenter
     {
-        private readonly SelectParameterView view;
+        private readonly ISelectParameterView view;
         private readonly SelectParameterModel model;
 
-        public SelectParameterPresenter(SelectParameterView view, SelectParameterModel model)
+        public SelectParameterPresenter(ISelectParameterView view, SelectParameterModel model)
         {
             this.view = view;
             this.model = model;
@@ -63,46 +53,32 @@ namespace Automation_1
             view.ContinueButton.Pressed += OnContinuePressed;
         }
 
-        /// <summary>Raised when the user clicks Back.</summary>
         public event EventHandler BackRequested;
 
-        /// <summary>Raised when the user clicks Continue.</summary>
         public event EventHandler ContinueRequested;
 
-        /// <summary>Syncs the view with current model state.</summary>
         public void LoadView()
         {
             view.ParameterIdNumeric.Value = model.ParameterId;
         }
 
-        private void OnBackPressed(object sender, EventArgs e)
-        {
+        private void OnBackPressed(object sender, EventArgs e) =>
             BackRequested?.Invoke(this, EventArgs.Empty);
-        }
 
         private void OnContinuePressed(object sender, EventArgs e)
         {
             model.ParameterId = (int)view.ParameterIdNumeric.Value;
             ContinueRequested?.Invoke(this, EventArgs.Empty);
         }
-
-        /// <summary>Test helper – directly invokes the Back handler.</summary>
-        internal void SimulateBackPressed() =>
-            OnBackPressed(view.BackButton, EventArgs.Empty);
-
-        /// <summary>Test helper – directly invokes the Continue handler.</summary>
-        internal void SimulateContinuePressed() =>
-            OnContinuePressed(view.ContinueButton, EventArgs.Empty);
     }
 
-    /// <summary>Presenter for the "Set Value" dialog.</summary>
     public class SetValuePresenter
     {
-        private readonly SetValueView view;
+        private readonly ISetValueView view;
         private readonly SetValueModel model;
         private readonly IEngine engine;
 
-        public SetValuePresenter(SetValueView view, SetValueModel model, IEngine engine)
+        public SetValuePresenter(ISetValueView view, SetValueModel model, IEngine engine)
         {
             this.view = view;
             this.model = model;
@@ -114,13 +90,10 @@ namespace Automation_1
             view.ExitButton.Pressed += OnExitPressed;
         }
 
-        /// <summary>Raised when the user clicks Back.</summary>
         public event EventHandler BackRequested;
 
-        /// <summary>Raised when the user clicks Exit.</summary>
         public event EventHandler ExitRequested;
 
-        /// <summary>Resets the view to a clean state before showing.</summary>
         public void LoadView()
         {
             view.StringTextBox.Text = string.Empty;
@@ -132,61 +105,28 @@ namespace Automation_1
         {
             try
             {
-                var element = FindElement();
-                element.SetParameter(model.ParameterId, view.StringTextBox.Text);
+                FindElement().SetParameter(model.ParameterId, view.StringTextBox.Text);
                 view.ShowResult("Success");
             }
-            catch (Exception ex)
-            {
-                view.ShowResult($"Error: {ex.Message}");
-            }
+            catch (Exception ex) { view.ShowResult($"Error: {ex.Message}"); }
         }
 
         private void OnSetDoublePressed(object sender, EventArgs e)
         {
             try
             {
-                var element = FindElement();
-                element.SetParameter(model.ParameterId, view.DoubleNumeric.Value);
+                FindElement().SetParameter(model.ParameterId, view.DoubleNumeric.Value);
                 view.ShowResult("Success");
             }
-            catch (Exception ex)
-            {
-                view.ShowResult($"Error: {ex.Message}");
-            }
+            catch (Exception ex) { view.ShowResult($"Error: {ex.Message}"); }
         }
 
-        private void OnBackPressed(object sender, EventArgs e)
-        {
+        private void OnBackPressed(object sender, EventArgs e) =>
             BackRequested?.Invoke(this, EventArgs.Empty);
-        }
 
-        private void OnExitPressed(object sender, EventArgs e)
-        {
+        private void OnExitPressed(object sender, EventArgs e) =>
             ExitRequested?.Invoke(this, EventArgs.Empty);
-        }
 
-        /// <summary>Test helper – directly invokes the SetString handler.</summary>
-        internal void SimulateSetStringPressed() =>
-            OnSetStringPressed(view.SetStringButton, EventArgs.Empty);
-
-        /// <summary>Test helper – directly invokes the SetDouble handler.</summary>
-        internal void SimulateSetDoublePressed() =>
-            OnSetDoublePressed(view.SetDoubleButton, EventArgs.Empty);
-
-        /// <summary>Test helper – directly invokes the Back handler.</summary>
-        internal void SimulateBackPressed() =>
-            OnBackPressed(view.BackButton, EventArgs.Empty);
-
-        /// <summary>Test helper – directly invokes the Exit handler.</summary>
-        internal void SimulateExitPressed() =>
-            OnExitPressed(view.ExitButton, EventArgs.Empty);
-
-        /// <summary>
-        /// Resolves the element fresh via engine.FindElement() — same approach as the
-        /// working original. Using the cached model reference can yield a stale object
-        /// that silently fails on SetParameter.
-        /// </summary>
         private Element FindElement()
         {
             if (model.SelectedElement == null)

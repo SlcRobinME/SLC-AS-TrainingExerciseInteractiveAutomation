@@ -95,20 +95,25 @@
 		{
 			// Arrange
 			var element = CreateFakeElement("Alpha");
+			var buttonMock = new Mock<IButton>();
+			var dropDown = new Mock<Automation_1.IDropDown<Element>>();
+			var viewMock = new Mock<ISelectElementView>();
+
+			viewMock.Setup(v => v.ContinueButton).Returns(buttonMock.Object);
+			viewMock.Setup(v => v.ElementDropDown).Returns(dropDown.Object);
+			dropDown.Setup(d => d.Selected).Returns(element);
+
 			engineMock.Setup(e => e.FindElementsByName("*")).Returns(new[] { element });
 
 			var model = new SelectElementModel(engineMock.Object);
-			var view = new SelectElementView(engineMock.Object);
-			var presenter = new SelectElementPresenter(view, model);
-
+			var presenter = new SelectElementPresenter((ISelectElementView)viewMock.Object, model);
 			presenter.LoadView();
-			view.ElementDropDown.Selected = element;
 
 			bool eventRaised = false;
 			presenter.ContinueRequested += (s, e) => eventRaised = true;
 
-			// Act
-			presenter.SimulateContinuePressed();
+			// Act — direktno firamo event, nema Simulate metoda
+			buttonMock.Raise(b => b.Pressed += null, EventArgs.Empty);
 
 			// Assert
 			eventRaised.Should().BeTrue();
@@ -119,17 +124,24 @@
 		public void SelectParameterPresenter_ShouldRaiseContinueRequested()
 		{
 			// Arrange
+			var continueButtonMock = new Mock<IButton>();
+			var backButtonMock = new Mock<IButton>();
+			var numericMock = new Mock<INumeric>();
+			var viewMock = new Mock<ISelectParameterView>();
+
+			viewMock.Setup(v => v.ContinueButton).Returns(continueButtonMock.Object);
+			viewMock.Setup(v => v.BackButton).Returns(backButtonMock.Object);
+			viewMock.Setup(v => v.ParameterIdNumeric).Returns(numericMock.Object);
+			numericMock.Setup(n => n.Value).Returns(123);
+
 			var model = new SelectParameterModel();
-			var view = new SelectParameterView(engineMock.Object);
-			var presenter = new SelectParameterPresenter(view, model);
+			var presenter = new SelectParameterPresenter(viewMock.Object, model);
 
 			bool eventRaised = false;
 			presenter.ContinueRequested += (s, e) => eventRaised = true;
 
-			view.ParameterIdNumeric.Value = 123;
-
 			// Act
-			presenter.SimulateContinuePressed();
+			continueButtonMock.Raise(b => b.Pressed += null, EventArgs.Empty);
 
 			// Assert
 			eventRaised.Should().BeTrue();
@@ -146,21 +158,35 @@
 
 			engineMock.Setup(e => e.FindElement("Alpha")).Returns(elementMock.Object);
 
+			var setStringButtonMock = new Mock<IButton>();
+			var setDoubleButtonMock = new Mock<IButton>();
+			var backButtonMock = new Mock<IButton>();
+			var exitButtonMock = new Mock<IButton>();
+			var stringTextBoxMock = new Mock<ITextBox>();
+			var doubleNumericMock = new Mock<INumeric>();
+			var resultTextBoxMock = new Mock<ITextBox>();
+			var viewMock = new Mock<ISetValueView>();
+
+			viewMock.Setup(v => v.SetStringButton).Returns(setStringButtonMock.Object);
+			viewMock.Setup(v => v.SetDoubleButton).Returns(setDoubleButtonMock.Object);
+			viewMock.Setup(v => v.BackButton).Returns(backButtonMock.Object);
+			viewMock.Setup(v => v.ExitButton).Returns(exitButtonMock.Object);
+			viewMock.Setup(v => v.StringTextBox).Returns(stringTextBoxMock.Object);
+			viewMock.Setup(v => v.DoubleNumeric).Returns(doubleNumericMock.Object);
+			stringTextBoxMock.Setup(t => t.Text).Returns("Hello");
+
 			var model = new SetValueModel
 			{
 				SelectedElement = elementMock.Object,
 				ParameterId = 5
 			};
-			var view = new SetValueView(engineMock.Object);
-			var presenter = new SetValuePresenter(view, model, engineMock.Object);
-
-			view.StringTextBox.Text = "Hello";
+			var presenter = new SetValuePresenter(viewMock.Object, model, engineMock.Object);
 
 			// Act
-			presenter.SimulateSetStringPressed();
+			setStringButtonMock.Raise(b => b.Pressed += null, EventArgs.Empty);
 
 			// Assert
-			view.ResultTextBox.Text.Should().Be("Success");
+			viewMock.Verify(v => v.ShowResult("Success"), Times.Once);
 			elementMock.Verify(e => e.SetParameter(5, "Hello"), Times.Once);
 		}
 
