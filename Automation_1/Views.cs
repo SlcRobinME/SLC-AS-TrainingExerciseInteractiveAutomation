@@ -20,7 +20,7 @@
             Title = "Select Element";
 
             LabelSelect = new Label("Please select an element on which you would like to set a parameter:");
-            DropdownElements = new DropDown();
+            DropdownElements = new DropDown<Element>();
             ButtonContinue = new Button("Continue") { Width = UIConstants.ButtonWidth };
 
             AddWidget(LabelSelect, 0, 0);
@@ -32,14 +32,10 @@
 
         public Label LabelSelect { get; }
 
-        public DropDown DropdownElements { get; }
+        public DropDown<Element> DropdownElements { get; }
 
         public Button ButtonContinue { get; }
 
-        public void SetElementOptions(IEnumerable<string> elements)
-        {
-            DropdownElements.SetOptions(elements);
-        }
     }
 
     public class SelectParameterView : Dialog

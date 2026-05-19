@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Skyline.DataMiner.Automation;
+    using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
     public class SelectElementModel
     {
@@ -14,39 +15,29 @@
             this.engine = engine;
         }
 
-        public string SelectedElement { get; set; }
+        public Element SelectedElement { get; set; }
 
-        public IEnumerable<string> GetAllElementNames()
+        public IEnumerable<Element> GetAllElements()
         {
-            try
-            {
                 var elements = engine.FindElementsByName("*");
-                if (elements != null && elements.Length > 0)
-                    return elements.Select(e => e.ElementName).OrderBy(n => n);
 
-                var elementsByView = engine.FindElementsInView(0);
-                if (elementsByView != null && elementsByView.Length > 0)
-                    return elementsByView.Select(e => e.ElementName).OrderBy(n => n);
+                if (elements == null || elements.Length == 0)
+                    return Enumerable.Empty<Element>();
 
-                return new List<string> { "No elements found" };
-            }
-            catch (Exception ex)
-            {
-                return new List<string> { $"Error loading elements {ex.Message}" };
-            }
+                return elements.OrderBy(e => e.ElementName);
         }
     }
 
     public class SelectParameterModel
     {
-        public string SelectedElement { get; set; }
+        public Element SelectedElement { get; set; }
 
         public int ParametarId { get; set; }
     }
 
     public class SetValueModel
     {
-        public string SelectedElement { get; set; }
+        public Element SelectedElement { get; set; }
 
         public int ParameterId { get; set; }
     }

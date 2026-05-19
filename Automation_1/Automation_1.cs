@@ -47,7 +47,7 @@ namespace Automation_1
 
             var elementPresenter = new SelectElementPresenter(elementView, elementModel);
             var parameterPresenter = new SelectParameterPresenter(parameterView, parameterModel);
-            var valuePresenter = new SetValuePresenter(valueView, valueModel, engine);
+            var valuePresenter = new SetValuePresenter(valueView, valueModel);
 
             elementPresenter.OnContinue += (s, e) =>
             {

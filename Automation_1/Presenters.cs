@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Skyline.DataMiner.Automation;
+    using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
     public class SelectElementPresenter
     {
@@ -22,14 +23,11 @@
 
         public void LoadView()
         {
-            var elements = model.GetAllElementNames().ToList();
+            var options = model.GetAllElements()
+                .Select(e => new Option<Element>(e.ElementName, e))
+                .ToList();
 
-            if (!elements.Any())
-            {
-                elements = new List<string> { "No elements found" };
-            }
-
-            view.SetElementOptions(elements);
+            view.DropdownElements.SetOptions(options);
         }
 
         private void OnContinuePressed(object sender, EventArgs e)
@@ -78,13 +76,11 @@
     {
         private readonly SetValueView view;
         private readonly SetValueModel model;
-        private readonly Engine engine;
 
-        public SetValuePresenter(SetValueView view, SetValueModel model, Engine engine)
+        public SetValuePresenter(SetValueView view, SetValueModel model)
         {
             this.view = view;
             this.model = model;
-            this.engine = engine;
 
             view.ButtonSetString.Pressed += OnSetStringPressed;
             view.ButtonSetDouble.Pressed += OnSetDoublePressed;
@@ -107,11 +103,10 @@
         {
             try
             {
-                var element = engine.FindElement(model.SelectedElement);
-                if (element == null)
+                if (model.SelectedElement == null)
                     throw new Exception($"Element '{model.SelectedElement}' not found.");
 
-                element.SetParameter(model.ParameterId, view.TextBoxString.Text);
+                model.SelectedElement.SetParameter(model.ParameterId, view.TextBoxString.Text);
                 view.ShowResult("Success");
             }
             catch (Exception ex)
@@ -124,11 +119,10 @@
         {
             try
             {
-                var element = engine.FindElement(model.SelectedElement);
-                if (element == null)
+                if (model.SelectedElement == null)
                     throw new Exception($"Element '{model.SelectedElement}' not found.");
 
-                element.SetParameter(model.ParameterId, view.NumericDouble.Value);
+                model.SelectedElement.SetParameter(model.ParameterId, view.NumericDouble.Value);
                 view.ShowResult("Success");
             }
             catch (Exception ex)
