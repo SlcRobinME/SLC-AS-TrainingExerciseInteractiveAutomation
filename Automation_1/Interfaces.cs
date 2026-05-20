@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using Skyline.DataMiner.Automation;
-    using Skyline.DataMiner.Net;
 
     public interface IButton
     {
@@ -47,7 +46,6 @@
     {
         T Selected { get; set; }
 
-        void SetOptions(System.Collections.Generic.IEnumerable<Skyline.DataMiner.Net.Option<Element>> options);
         void SetOptions(List<Skyline.DataMiner.Utils.InteractiveAutomationScript.Option<Element>> options);
     }
 

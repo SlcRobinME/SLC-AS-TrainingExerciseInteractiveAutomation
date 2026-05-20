@@ -1,18 +1,17 @@
 ﻿namespace Automation_1
 {
+    using System;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
     /// <summary>Shared UI dimension constants.</summary>
     public static class UIConstants
     {
-
         public const int ButtonWidth = 120;
         public const int ViewWidth = 560;
         public const int ViewHeight = 220;
         public const int TextBoxWidth = 280;
         public const int ResultBoxHeight = 90;
-
     }
 
     /// <summary>View for the "Select Element" dialog.</summary>
@@ -142,7 +141,14 @@
 
         public Button ExitButton { get; }
 
-        /// <summary>Displays a result message in the feedback box.</summary>
-        public void ShowResult(string message) => ResultTextBox.Text = message;
+        public void ShowResult(string message)
+        {
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            ResultTextBox.Text = message;
+        }
     }
 }

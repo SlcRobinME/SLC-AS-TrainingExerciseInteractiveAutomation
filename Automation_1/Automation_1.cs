@@ -34,16 +34,27 @@ namespace Automation_1
         {
             try
             {
-                engine.FindInteractiveClient("SetParameter Script", 100, "user:" + engine.UserLoginName);
                 engine.SetFlag(RunTimeFlags.NoKeyCaching);
                 engine.Timeout = TimeSpan.FromHours(10);
 
                 RunSafe(engine);
             }
-            catch (ScriptAbortException) { throw; }
-            catch (ScriptForceAbortException) { throw; }
-            catch (ScriptTimeoutException) { throw; }
-            catch (InteractiveUserDetachedException) { throw; }
+            catch (ScriptAbortException)
+			{
+				throw;
+			}
+            catch (ScriptForceAbortException)
+			{
+				throw;
+			}
+            catch (ScriptTimeoutException)
+			{
+				throw;
+			}
+            catch (InteractiveUserDetachedException)
+			{
+				throw;
+			}
             catch (Exception ex)
             {
                 engine.ExitFail($"Run|Something went wrong: {ex}");

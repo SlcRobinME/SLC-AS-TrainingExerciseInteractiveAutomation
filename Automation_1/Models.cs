@@ -14,10 +14,9 @@
             this.engine = engine;
         }
 
-        /// <summary>The element chosen by the user.</summary>
+        /// <summary>Gets or sets the element chosen by the user.</summary>
         public Element SelectedElement { get; set; }
 
-        /// <summary>Returns all elements in the DMS, sorted by name.</summary>
         public IEnumerable<Element> GetAllElements()
         {
             var elements = engine.FindElementsByName("*");
@@ -32,20 +31,20 @@
     /// <summary>Model for the "Select Parameter" step.</summary>
     public class SelectParameterModel
     {
-        /// <summary>The element carried forward from step 1.</summary>
+        /// <summary>Gets or sets the element carried forward from step 1.</summary>
         public Element SelectedElement { get; set; }
 
-        /// <summary>The parameter ID chosen by the user.</summary>
+        /// <summary>Gets or sets the parameter ID chosen by the user.</summary>
         public int ParameterId { get; set; }
     }
 
     /// <summary>Model for the "Set Value" step.</summary>
     public class SetValueModel
     {
-        /// <summary>The element on which the parameter will be set.</summary>
+        /// <summary>Gets or sets the element on which the parameter will be set.</summary>
         public Element SelectedElement { get; set; }
 
-        /// <summary>The parameter ID to set.</summary>
+        /// <summary>Gets or sets the parameter ID to set.</summary>
         public int ParameterId { get; set; }
     }
 }

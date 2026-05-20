@@ -105,7 +105,10 @@
                 FindElement().SetParameter(model.ParameterId, view.StringTextBox.Text);
                 view.ShowResult("Success");
             }
-            catch (Exception ex) { view.ShowResult($"Error: {ex.Message}"); }
+            catch (Exception ex)
+			{
+				view.ShowResult($"Error: {ex.Message}");
+			}
         }
 
         private void OnSetDoublePressed(object sender, EventArgs e)
@@ -115,7 +118,10 @@
                 FindElement().SetParameter(model.ParameterId, view.DoubleNumeric.Value);
                 view.ShowResult("Success");
             }
-            catch (Exception ex) { view.ShowResult($"Error: {ex.Message}"); }
+            catch (Exception ex)
+			{
+				view.ShowResult($"Error: {ex.Message}");
+			}
         }
 
         private void OnBackPressed(object sender, EventArgs e) =>

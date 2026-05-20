@@ -7,33 +7,41 @@
 	using Microsoft.VisualStudio.TestTools.UnitTesting;
 	using Moq;
 	using Skyline.DataMiner.Automation;
-	using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 
+	/// <summary>
+	/// Should contain unit tests for the models and presenters of the MVP pattern, ensuring that the logic for retrieving elements, storing selected values, and handling user interactions is working correctly and can be maintained with confidence as the code evolves.
+	/// </summary>
 	[TestClass]
 	public sealed class ModelAndPresenterTests
 	{
-		private Mock<IEngine> engineMock;
+		private Mock<IEngine>? engineMock;
 
+		/// <summary>
+		/// Should initialize a new instance of the SelectElementModel with a mocked IEngine, allowing us to control the behavior of the engine and test the model's logic in isolation without relying on an actual DataMiner environment.
+		/// </summary>
 		[TestInitialize]
 		public void Setup()
 		{
-			engineMock = new Mock<IEngine>(MockBehavior.Strict);
+			this.engineMock = new Mock<IEngine>(MockBehavior.Strict);
 		}
 
+		/// <summary>
+		/// Should return all elements sorted by name, ensuring that the user sees a well-organized list of elements to choose from, improving usability and efficiency when selecting an element from a potentially large list.
+		/// </summary>
 		[TestMethod]
 		public void SelectElementModel_GetAllElements_ReturnsSortedElements()
 		{
 			// Arrange
 			var elements = new[]
 			{
-				CreateFakeElement("Zeta"),
-				CreateFakeElement("Alpha"),
-				CreateFakeElement("Beta")
+				this.CreateFakeElement("Zeta"),
+				this.CreateFakeElement("Alpha"),
+				this.CreateFakeElement("Beta"),
 			};
 
 			engineMock.Setup(e => e.FindElementsByName("*")).Returns(elements);
 
-			var model = new SelectElementModel(engineMock.Object);
+			var model = new SelectElementModel(this.engineMock.Object);
 
 			// Act
 			var result = model.GetAllElements().ToList();
@@ -43,6 +51,9 @@
 			result.Select(e => e.ElementName).Should().ContainInOrder("Alpha", "Beta", "Zeta");
 		}
 
+		/// <summary>
+		/// Should return an empty collection if no elements are found, ensuring that the application can gracefully handle cases where there are no elements to display without throwing exceptions.
+		/// </summary>
 		[TestMethod]
 		public void SelectElementModel_GetAllElements_WhenNoElements_ReturnsEmpty()
 		{
@@ -58,11 +69,14 @@
 			result.Should().BeEmpty();
 		}
 
+		/// <summary>
+		/// Should store the selected element and parameter ID in SelectParameterModel, which will be used in the final step to set the parameter value on the correct element and parameter.
+		/// </summary>
 		[TestMethod]
 		public void SelectParameterModel_ShouldStoreSelectedElementAndParameterId()
 		{
 			// Arrange
-			var element = CreateFakeElement("TestElement");
+			var element = this.CreateFakeElement("TestElement");
 			var model = new SelectParameterModel();
 
 			// Act
@@ -74,11 +88,14 @@
 			model.ParameterId.Should().Be(42);
 		}
 
+		/// <summary>
+		/// Should store the selected element and parameter ID in SetValueModel, which will be used to set the parameter value in the final step.
+		/// </summary>
 		[TestMethod]
 		public void SetValueModel_ShouldStoreSelectedElementAndParameterId()
 		{
 			// Arrange
-			var element = CreateFakeElement("AnotherElement");
+			var element = this.CreateFakeElement("AnotherElement");
 			var model = new SetValueModel();
 
 			// Act
@@ -90,11 +107,14 @@
 			model.ParameterId.Should().Be(99);
 		}
 
+		/// <summary>
+		/// Should raise ContinueRequested and update model with selected element when Continue button is pressed in SelectElementPresenter.
+		/// </summary>
 		[TestMethod]
 		public void SelectElementPresenter_ShouldRaiseContinueRequested()
 		{
 			// Arrange
-			var element = CreateFakeElement("Alpha");
+			var element = this.CreateFakeElement("Alpha");
 			var buttonMock = new Mock<IButton>();
 			var dropDown = new Mock<Automation_1.IDropDown<Element>>();
 			var viewMock = new Mock<ISelectElementView>();
@@ -120,6 +140,9 @@
 			model.SelectedElement.ElementName.Should().Be("Alpha");
 		}
 
+		/// <summary>
+		/// Should raise ContinueRequested and update model with parameter ID when Continue button is pressed in SelectParameterPresenter.
+		/// </summary>
 		[TestMethod]
 		public void SelectParameterPresenter_ShouldRaiseContinueRequested()
 		{
@@ -148,6 +171,9 @@
 			model.ParameterId.Should().Be(123);
 		}
 
+		/// <summary>
+		/// Should update the parameter value on the element and show success message when SetStringButton is pressed in SetValuePresenter.
+		/// </summary>
 		[TestMethod]
 		public void SetValuePresenter_OnSetStringPressed_ShouldUpdateParameter()
 		{
@@ -178,9 +204,9 @@
 			var model = new SetValueModel
 			{
 				SelectedElement = elementMock.Object,
-				ParameterId = 5
+				ParameterId = 5,
 			};
-			var presenter = new SetValuePresenter(viewMock.Object, model, engineMock.Object);
+			var presenter = new SetValuePresenter(viewMock.Object, model, this.engineMock.Object);
 
 			// Act
 			setStringButtonMock.Raise(b => b.Pressed += null, EventArgs.Empty);
