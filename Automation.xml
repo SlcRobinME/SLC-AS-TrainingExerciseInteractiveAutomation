@@ -3,6 +3,7 @@
 	<Name>Automation</Name>
 	<Description></Description>
 	<Type>Automation</Type>
+	<Interactivity>Always</Interactivity>
 	<Author>SKYLINE2\XXX</Author>
 	<CheckSets>FALSE</CheckSets>
 	<Folder></Folder>
