@@ -34,12 +34,21 @@ namespace Automation_1
         /// <param name="engine">Link with SLAutomation process.</param>
         public void Run(IEngine engine)
         {
+                        /*
+            * Note:
+            * Do not remove the commented methods below!
+            * The lines are needed to execute an interactive automation script from the non-interactive automation script or from Visio!
+            *
+            * engine.ShowUI();
+            */
+            if (engine.IsInteractive)
+            {
+                engine.FindInteractiveClient("Failed to run script in interactive mode", 1);
+            }
             Configuration configuration = new Configuration();
             AutomationModel model = new AutomationModel(engine);
             AutomationWindow window = new AutomationWindow(engine);
-
-            AutomationPresenter presenter =
-                new AutomationPresenter(engine, configuration, model, window);
+            AutomationPresenter presenter = new AutomationPresenter(engine, configuration, model, window);
 
             presenter.Run();
         }
@@ -138,8 +147,7 @@ namespace Automation_1
                 controller.ShowDialog(window.ParameterDialog);
             };
 
-            window.BackToElementButton.Pressed += (sender, args) =>
-                controller.ShowDialog(window.ElementDialog);
+            window.BackToElementButton.Pressed += (sender, args) => controller.ShowDialog(window.ElementDialog);
 
             window.ContinueToValueButton.Pressed += (sender, args) =>
             {
@@ -191,7 +199,8 @@ namespace Automation_1
 
         public void Run()
         {
-            controller.Run(window.ElementDialog);
+            controller.ShowDialog(window.ElementDialog);
+
         }
 
         private void PopulateElements()
