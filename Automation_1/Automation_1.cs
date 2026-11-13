@@ -47,8 +47,16 @@ namespace Automation_1
             }
             Configuration configuration = new Configuration();
             AutomationModel model = new AutomationModel(engine);
-            AutomationWindow window = new AutomationWindow(engine);
-            AutomationPresenter presenter = new AutomationPresenter(engine, configuration, model, window);
+            ElementSelectionDialog elementSelectionDialog = new ElementSelectionDialog(engine);
+            ParameterSelectionDialog parameterSelectionDialog = new ParameterSelectionDialog(engine);
+            ValueUpdateDialog valueUpdateDialog = new ValueUpdateDialog(engine);
+            AutomationPresenter presenter = new AutomationPresenter(
+                engine,
+                configuration,
+                model,
+                elementSelectionDialog,
+                parameterSelectionDialog,
+                valueUpdateDialog);
 
             presenter.Run();
         }
@@ -112,7 +120,9 @@ namespace Automation_1
         private readonly IEngine engine;
         private readonly Configuration configuration;
         private readonly AutomationModel model;
-        private readonly AutomationWindow window;
+        private readonly ElementSelectionDialog elementSelectionDialog;
+        private readonly ParameterSelectionDialog parameterSelectionDialog;
+        private readonly ValueUpdateDialog valueUpdateDialog;
         private readonly InteractiveController controller;
         private readonly Dictionary<string, Element> elementsByLabel = new Dictionary<string, Element>();
 
@@ -122,19 +132,23 @@ namespace Automation_1
             IEngine engine,
             Configuration configuration,
             AutomationModel model,
-            AutomationWindow window)
+            ElementSelectionDialog elementSelectionDialog,
+            ParameterSelectionDialog parameterSelectionDialog,
+            ValueUpdateDialog valueUpdateDialog)
         {
             this.engine = engine;
             this.configuration = configuration;
             this.model = model;
-            this.window = window;
+            this.elementSelectionDialog = elementSelectionDialog;
+            this.parameterSelectionDialog = parameterSelectionDialog;
+            this.valueUpdateDialog = valueUpdateDialog;
             controller = new InteractiveController(engine);
 
             PopulateElements();
 
-            window.ContinueToParameterButton.Pressed += (sender, args) =>
+            elementSelectionDialog.ContinueToParameterButton.Pressed += (sender, args) =>
             {
-                string selectedLabel = window.ElementDropDown.Selected;
+                string selectedLabel = elementSelectionDialog.ElementDropDown.Selected;
                 Element selectedElement;
 
                 if (String.IsNullOrEmpty(selectedLabel) || !elementsByLabel.TryGetValue(selectedLabel, out selectedElement))
@@ -144,14 +158,15 @@ namespace Automation_1
 
                 configuration.SelectedElement = selectedElement;
                 PopulateParameters(selectedElement);
-                controller.ShowDialog(window.ParameterDialog);
+                controller.ShowDialog(parameterSelectionDialog);
             };
 
-            window.BackToElementButton.Pressed += (sender, args) => controller.ShowDialog(window.ElementDialog);
+            parameterSelectionDialog.BackToElementButton.Pressed += (sender, args) =>
+                controller.ShowDialog(elementSelectionDialog);
 
-            window.ContinueToValueButton.Pressed += (sender, args) =>
+            parameterSelectionDialog.ContinueToValueButton.Pressed += (sender, args) =>
             {
-                string selectedLabel = window.ParameterDropDown.Selected;
+                string selectedLabel = parameterSelectionDialog.ParameterDropDown.Selected;
                 ParameterInfo selectedParameter;
 
                 if (String.IsNullOrEmpty(selectedLabel) || !parametersByLabel.TryGetValue(selectedLabel, out selectedParameter))
@@ -162,20 +177,20 @@ namespace Automation_1
                 configuration.ParameterId = selectedParameter.ID;
                 configuration.SelectedParameterType = selectedParameter.ParameterType;
 
-                window.ConfigureValueWidgets(selectedParameter.ParameterType == ParameterMeasurementType.String);
+                valueUpdateDialog.ConfigureValueWidgets(selectedParameter.ParameterType == ParameterMeasurementType.String);
 
-                window.StringValueTextBox.Text = configuration.StringValue;
-                window.DoubleValueNumeric.Value = configuration.DoubleValue;
-                controller.ShowDialog(window.ValueDialog);
+                valueUpdateDialog.StringValueTextBox.Text = configuration.StringValue;
+                valueUpdateDialog.DoubleValueNumeric.Value = configuration.DoubleValue;
+                controller.ShowDialog(valueUpdateDialog);
             };
 
-            window.BackToParameterButton.Pressed += (sender, args) =>
+            valueUpdateDialog.BackToParameterButton.Pressed += (sender, args) =>
             {
                 SaveEnteredValues();
-                controller.ShowDialog(window.ParameterDialog);
+                controller.ShowDialog(parameterSelectionDialog);
             };
 
-            window.SetStringValueButton.Pressed += (sender, args) =>
+            valueUpdateDialog.SetStringValueButton.Pressed += (sender, args) =>
             {
                 SaveEnteredValues();
                 SetValue(() => model.SetStringValue(
@@ -184,7 +199,7 @@ namespace Automation_1
                     configuration.StringValue));
             };
 
-            window.SetDoubleValueButton.Pressed += (sender, args) =>
+            valueUpdateDialog.SetDoubleValueButton.Pressed += (sender, args) =>
             {
                 SaveEnteredValues();
                 SetValue(() => model.SetDoubleValue(
@@ -193,13 +208,13 @@ namespace Automation_1
                     configuration.DoubleValue));
             };
 
-            window.ExitButton.Pressed += (sender, args) =>
+            valueUpdateDialog.ExitButton.Pressed += (sender, args) =>
                 engine.ExitSuccess("The user exited the interactive automation.");
         }
 
         public void Run()
         {
-            controller.ShowDialog(window.ElementDialog);
+            controller.ShowDialog(elementSelectionDialog);
 
         }
 
@@ -221,7 +236,7 @@ namespace Automation_1
                 labels.Add(label);
             }
 
-            window.ElementDropDown.SetOptions(labels);
+            elementSelectionDialog.ElementDropDown.SetOptions(labels);
         }
 
         private void PopulateParameters(Element element)
@@ -256,12 +271,12 @@ namespace Automation_1
                 labels.Add(label);
             }
 
-            window.ParameterDropDown.SetOptions(labels);
+            parameterSelectionDialog.ParameterDropDown.SetOptions(labels);
         }
         private void SaveEnteredValues()
         {
-            configuration.StringValue = window.StringValueTextBox.Text;
-            configuration.DoubleValue = window.DoubleValueNumeric.Value;
+            configuration.StringValue = valueUpdateDialog.StringValueTextBox.Text;
+            configuration.DoubleValue = valueUpdateDialog.DoubleValueNumeric.Value;
         }
 
         private void SetValue(Action setValue)
@@ -277,8 +292,8 @@ namespace Automation_1
                 configuration.ResultMessage = exception.ToString();
             }
 
-            window.ResultTextBox.Text = configuration.ResultMessage;
-            controller.ShowDialog(window.ValueDialog);
+            valueUpdateDialog.ResultTextBox.Text = configuration.ResultMessage;
+            controller.ShowDialog(valueUpdateDialog);
         }
 
         private void ResetValueInputs()
@@ -286,12 +301,12 @@ namespace Automation_1
             configuration.StringValue = String.Empty;
             configuration.DoubleValue = 0.0;
 
-            window.StringValueTextBox.Text = String.Empty;
-            window.DoubleValueNumeric.Value = 0.0;
+            valueUpdateDialog.StringValueTextBox.Text = String.Empty;
+            valueUpdateDialog.DoubleValueNumeric.Value = 0.0;
         }
     }
 
-    internal sealed class AutomationDialog : Dialog
+    internal class AutomationDialog : Dialog
     {
         public AutomationDialog(IEngine engine)
             : base(engine)
@@ -299,31 +314,101 @@ namespace Automation_1
         }
     }
 
-    internal sealed class AutomationWindow
+    internal sealed class ElementSelectionDialog : AutomationDialog
     {
-        public AutomationDialog ElementDialog { get; private set; }
-
         public DropDown ElementDropDown { get; private set; }
 
         public Button ContinueToParameterButton { get; private set; }
 
-        public AutomationDialog ParameterDialog { get; private set; }
+        public ElementSelectionDialog(IEngine engine)
+            : base(engine)
+        {
+            Title = "Select element";
+            ElementDropDown = new DropDown();
+            ContinueToParameterButton = new Button("Continue...");
 
+            AddWidget(new Label("Select an element on which to set a parameter:"), 0, 0);
+            AddWidget(ElementDropDown, 1, 0);
+            AddWidget(ContinueToParameterButton, 2, 0);
+        }
+
+        private void AddWidget(Widget widget, int row, int column)
+        {
+            AddWidget(widget, row, column, 1, 1, HorizontalAlignment.Left);
+        }
+
+        private void AddWidget(
+            Widget widget,
+            int row,
+            int column,
+            int rowSpan,
+            int columnSpan,
+            HorizontalAlignment horizontalAlignment)
+        {
+            base.AddWidget(
+                widget,
+                row,
+                column,
+                rowSpan,
+                columnSpan,
+                horizontalAlignment,
+                VerticalAlignment.Center);
+        }
+    }
+
+    internal sealed class ParameterSelectionDialog : AutomationDialog
+    {
         public DropDown ParameterDropDown { get; private set; }
-
-        public Label StringValueLabel { get; private set; }
-
-        public Label DoubleValueLabel { get; private set; }
 
         public Button BackToElementButton { get; private set; }
 
         public Button ContinueToValueButton { get; private set; }
 
-        public AutomationDialog ValueDialog { get; private set; }
+        public ParameterSelectionDialog(IEngine engine)
+            : base(engine)
+        {
+            Title = "Specify parameter";
+            ParameterDropDown = new DropDown();
+            BackToElementButton = new Button("Back...");
+            ContinueToValueButton = new Button("Continue...");
+
+            SetColumnWidthStretch(0);
+            SetColumnWidthStretch(1);
+
+            AddWidget(new Label("Select a parameter:"), 0, 0, 1, 2, HorizontalAlignment.Stretch);
+            AddWidget(ParameterDropDown, 1, 0, 1, 2, HorizontalAlignment.Stretch);
+            AddWidget(BackToElementButton, 2, 0, 1, 1, HorizontalAlignment.Stretch);
+            AddWidget(ContinueToValueButton, 2, 1, 1, 1, HorizontalAlignment.Stretch);
+        }
+
+        private void AddWidget(
+            Widget widget,
+            int row,
+            int column,
+            int rowSpan,
+            int columnSpan,
+            HorizontalAlignment horizontalAlignment)
+        {
+            base.AddWidget(
+                widget,
+                row,
+                column,
+                rowSpan,
+                columnSpan,
+                horizontalAlignment,
+                VerticalAlignment.Center);
+        }
+    }
+
+    internal sealed class ValueUpdateDialog : AutomationDialog
+    {
+        public Label StringValueLabel { get; private set; }
 
         public TextBox StringValueTextBox { get; private set; }
 
         public Button SetStringValueButton { get; private set; }
+
+        public Label DoubleValueLabel { get; private set; }
 
         public Numeric DoubleValueNumeric { get; private set; }
 
@@ -335,30 +420,10 @@ namespace Automation_1
 
         public Button ExitButton { get; private set; }
 
-        public AutomationWindow(IEngine engine)
+        public ValueUpdateDialog(IEngine engine)
+            : base(engine)
         {
-            ElementDialog = new AutomationDialog(engine) { Title = "Select element" };
-            ElementDropDown = new DropDown();
-            ContinueToParameterButton = new Button("Continue...");
-
-            AddWidget(ElementDialog, new Label("Select an element on which to set a parameter:"), 0, 0);
-            AddWidget(ElementDialog, ElementDropDown, 1, 0);
-            AddWidget(ElementDialog, ContinueToParameterButton, 2, 0);
-
-            ParameterDialog = new AutomationDialog(engine) { Title = "Specify parameter" };
-            ParameterDropDown = new DropDown();
-            BackToElementButton = new Button("Back...");
-            ContinueToValueButton = new Button("Continue...");
-
-            ParameterDialog.SetColumnWidthStretch(0);
-            ParameterDialog.SetColumnWidthStretch(1);
-
-            AddWidget(ParameterDialog, new Label("Select a parameter:"), 0, 0, 1, 2, HorizontalAlignment.Stretch);
-            AddWidget(ParameterDialog, ParameterDropDown, 1, 0, 1, 2, HorizontalAlignment.Stretch);
-            AddWidget(ParameterDialog, BackToElementButton, 2, 0, 1, 1, HorizontalAlignment.Stretch);
-            AddWidget(ParameterDialog, ContinueToValueButton, 2, 1, 1, 1, HorizontalAlignment.Stretch);
-
-            ValueDialog = new AutomationDialog(engine) { Title = "Set parameter value" };
+            Title = "Set parameter value";
             StringValueLabel = new Label("String Value");
             StringValueTextBox = new TextBox();
             SetStringValueButton = new Button("Set String Value");
@@ -371,36 +436,17 @@ namespace Automation_1
             BackToParameterButton = new Button("Back...");
             ExitButton = new Button("Exit");
 
-            AddWidget(ValueDialog, StringValueLabel, 0, 0);
-            AddWidget(ValueDialog, StringValueTextBox, 0, 1);
-            AddWidget(ValueDialog, SetStringValueButton, 0, 2);
+            AddWidget(StringValueLabel, 0, 0);
+            AddWidget(StringValueTextBox, 0, 1);
+            AddWidget(SetStringValueButton, 0, 2);
 
-            AddWidget(ValueDialog, DoubleValueLabel, 1, 0);
-            AddWidget(ValueDialog, DoubleValueNumeric, 1, 1);
-            AddWidget(ValueDialog, SetDoubleValueButton, 1, 2);
+            AddWidget(DoubleValueLabel, 1, 0);
+            AddWidget(DoubleValueNumeric, 1, 1);
+            AddWidget(SetDoubleValueButton, 1, 2);
 
-            AddWidget(ValueDialog, ResultTextBox, 2, 0, 1, 3);
-            AddWidget(ValueDialog, BackToParameterButton, 3, 0);
-            AddWidget(ValueDialog, ExitButton, 3, 2);
-        }
-
-        private static void AddWidget(
-            Dialog dialog,
-            Widget widget,
-            int row,
-            int column,
-            int rowSpan = 1,
-            int columnSpan = 1,
-            HorizontalAlignment horizontalAlignment = HorizontalAlignment.Left)
-        {
-            dialog.AddWidget(
-                widget,
-                row,
-                column,
-                rowSpan,
-                columnSpan,
-                horizontalAlignment,
-                VerticalAlignment.Center);
+            AddWidget(ResultTextBox, 2, 0, 1, 3);
+            AddWidget(BackToParameterButton, 3, 0);
+            AddWidget(ExitButton, 3, 2);
         }
 
         public void ConfigureValueWidgets(bool showStringValue)
@@ -412,6 +458,39 @@ namespace Automation_1
             DoubleValueLabel.IsVisible = !showStringValue;
             DoubleValueNumeric.IsVisible = !showStringValue;
             SetDoubleValueButton.IsVisible = !showStringValue;
+        }
+
+        private void AddWidget(Widget widget, int row, int column)
+        {
+            AddWidget(widget, row, column, 1, 1, HorizontalAlignment.Left);
+        }
+
+        private void AddWidget(
+            Widget widget,
+            int row,
+            int column,
+            int rowSpan,
+            int columnSpan)
+        {
+            AddWidget(widget, row, column, rowSpan, columnSpan, HorizontalAlignment.Left);
+        }
+
+        private void AddWidget(
+            Widget widget,
+            int row,
+            int column,
+            int rowSpan,
+            int columnSpan,
+            HorizontalAlignment horizontalAlignment)
+        {
+            base.AddWidget(
+                widget,
+                row,
+                column,
+                rowSpan,
+                columnSpan,
+                horizontalAlignment,
+                VerticalAlignment.Center);
         }
     }
 
